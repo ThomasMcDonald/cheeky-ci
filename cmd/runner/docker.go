@@ -142,7 +142,11 @@ func (s *DockerSandbox) RunStep(ctx context.Context, step StepSpec) StepResult {
 		client.ExecInspectOptions{},
 	)
 	if err != nil {
-		return StepResult{ExitCode: -1, Error: err}
+		return StepResult{
+			ExitCode: -1, Error: err,
+			Stdout: stdout.String(),
+			Stderr: stderr.String(),
+		}
 	}
 
 	return StepResult{

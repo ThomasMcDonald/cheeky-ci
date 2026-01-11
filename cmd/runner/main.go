@@ -88,12 +88,14 @@ func (r *AgentRunner) Run(ctx context.Context) error {
 		result := sandbox.RunStep(stepCtx, step)
 		cancel()
 
+		r.logger.Printf("[%s] stdout: %s", step.Name, result.Stdout)
+		r.logger.Printf("[%s] stderr: %s", step.Name, result.Stderr)
 		if result.ExitCode != 0 {
 			r.logger.Printf("step %s failed (exit=%d)", step.Name, result.ExitCode)
 			return fmt.Errorf("job %s failed", job.JobID)
 		}
 
-		r.logger.Printf("step %s succeeded", step.Name)
+		r.logger.Printf("[%s] Succeeded", step.Name)
 	}
 
 	r.logger.Printf("Job %s completed successfully", job.JobID)
@@ -129,19 +131,19 @@ func dummyJob() JobSpec {
 			{
 				Name:    "checkout",
 				Image:   "alpine:3.19",
-				Command: []string{"sh", "-c", "echo 'checking out repo'"},
+				Command: []string{"sh", "-c", "echo hello > hello.txt"},
 				Workdir: "/workspace",
 			},
 			{
 				Name:    "build",
 				Image:   "alpine:3.19",
-				Command: []string{"sh", "-c", "echo 'building project'"},
+				Command: []string{"cat", "hello.txt"},
 				Workdir: "/workspace",
 			},
 			{
 				Name:    "test",
 				Image:   "alpine:3.19",
-				Command: []string{"sh", "-c", "echo 'running tests'"},
+				Command: []string{"sh", "-c", "echo failing && exit 1"},
 				Workdir: "/workspace",
 			},
 		},
