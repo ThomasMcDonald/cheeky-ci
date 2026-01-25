@@ -1,0 +1,16 @@
+services:
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: tom@applegeese.com
+      PGADMIN_DEFAULT_PASSWORD: asseton01
+      POSTGRES_PASSWORD: asseton01
+    ports:
+      - 80:80
+    volumes:
+      # Mounts a named volume to the pgAdmin data directory
+      - pgadmin-data:/var/lib/pgadmin
+volumes:
+  pgadmin-data:
+    name: "pgadmin-data"
