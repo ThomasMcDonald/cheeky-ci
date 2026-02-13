@@ -21,3 +21,10 @@ CREATE TABLE runners (
   capacity INT DEFAULT 0,
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+
+-- +goose down
+--
+DROP TABLE IF EXISTS runners;
+DROP TABLE IF EXISTS registration_tokens;
+DROP TABLE IF EXISTS jobs;
