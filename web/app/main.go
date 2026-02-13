@@ -130,13 +130,47 @@ func main() {
 		err = tx.QueryRow(context.Background(), `SELECT 1 FROM registration_tokens WHERE token_hash = $1 AND used_at IS NULL AND expires_at >= (now() at time zone 'utc') FOR UPDATE`, th).Scan(&expiresAt)
 		if err != nil {
 			fmt.Print(err)
-			w.WriteHeader(http.StatusInternalServerError)
+			w.WriteHeader(http.StatusNotFound)
+			return
 		}
 
 		_, err = tx.Exec(context.Background(), "UPDATE registration_tokens SET used_at = NOW() WHERE token_hash = $1", th)
-
-		_, err = fmt.Fprintln(w, "{}")
 		if err != nil {
+			fmt.Println(err)
+			err = tx.Rollback(context.Background())
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		uuid := uuid.NewString()
+		hash, _ := GetApiKeyHash(uuid)
+		tokenResponse := RunnerRegistrationPayload{Token: uuid}
+
+		_, err = tx.Exec(context.Background(), "INSERT into runners (name, token_hash, capabilities, capacity) VALUES('Test Agent', $1, '{}', 1)", hash)
+		if err != nil {
+			fmt.Println(err)
+			err = tx.Rollback(context.Background())
+			if err != nil {
+				fmt.Println(err)
+			}
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		responsePayload, err := json.Marshal(tokenResponse)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+
+		if _, err = w.Write(responsePayload); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	})
