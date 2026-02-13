@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -150,10 +154,85 @@ func dummyJob() JobSpec {
 	}
 }
 
+const META_DIR_PATH = "/var/lib/cheeky-ci-runner"
+
+type RunnerMeta struct {
+	Token string `json:"token"`
+}
+
 func main() {
+	if _, ok := os.LookupEnv("ORCHESTRATOR_HOST"); !ok {
+		panic("ORCHESTRATOR_HOST not set")
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	filePath := filepath.Join(META_DIR_PATH, "meta.json")
 
+	var state RunnerMeta
+	file, err := os.ReadFile(filePath)
+	if err != nil {
+		fmt.Println("Meta File missing, registering runner with REGISTRATION_TOKEN")
+
+		reader := bufio.NewReader(os.Stdin)
+
+		fmt.Println("Please enter the registration token")
+
+		text, err := reader.ReadString('\n')
+		if err != nil {
+			panic("Registering runner: Failed to read response body")
+		}
+
+		text = strings.ReplaceAll(text, "\n", "")
+
+		fmt.Println(text)
+
+		state.Token = text
+		stateStr, err := json.Marshal(state)
+		if err != nil {
+			panic(err)
+		}
+
+		err = os.Mkdir(META_DIR_PATH, 0755)
+		if err != nil {
+			panic(err)
+		}
+
+		f, err := os.Create(filePath)
+		if err != nil {
+			panic(err)
+		}
+
+		defer func() {
+			err := f.Close()
+			if err != nil {
+				panic(err)
+			}
+		}()
+
+		_, err = f.Write(stateStr)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+
+		err = json.Unmarshal(file, &state)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	fmt.Println(state.Token)
+
+	// Check var/lib/{name}/runner to see if RUNNER_TOKEN exists
+	//
+	// if no RUNNER_TOKEN
+	// Check Env REGISTRATION_TOKEN variable
+	// IF No panic
+	// if yes call os.GetEnv('orchestrator_host')/runner/register
+	// call /runner/{id}/healthcheck
+
+	return
 	executor, err := NewDockerExecutor()
 	if err != nil {
 		log.Fatalf("failed to create executor: %v", err)
