@@ -1,0 +1,20 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <title>Cheeky CI</title>
+    <script src="https://unpkg.com/htmx.org"></script>
+  </head>
+  <body>
+    <h1>Register Runner</h1>
+    <div id="content"></div>
+
+    <button
+      hx-get="/auth/generate-registration-token"
+      hx-target="#content"
+      hx-swap="innerHTML"
+    >
+      Generate Registration Token
+    </button>
+  </body>
+</html>
