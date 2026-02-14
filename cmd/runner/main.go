@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -160,71 +161,95 @@ type RunnerMeta struct {
 	Token string `json:"token"`
 }
 
-func main() {
-	if _, ok := os.LookupEnv("ORCHESTRATOR_HOST"); !ok {
-		panic("ORCHESTRATOR_HOST not set")
+func SetupRunnerConfig() (RunnerMeta, error) {
+	if os.Getenv("ORCHESTRATOR_HOST") == "" {
+		return RunnerMeta{}, fmt.Errorf("ORCHESTRATOR_HOST not set")
 	}
 
+	path := filepath.Join(META_DIR_PATH, "meta.json")
+
+	// Try to load existing config
+	meta, err := loadRunnerMeta(path)
+	if err == nil {
+		return meta, nil
+	}
+	if !os.IsNotExist(err) {
+		return RunnerMeta{}, fmt.Errorf("reading runner meta: %w", err)
+	}
+
+	// First-time setup (interactive)
+	meta, err = promptForRegistration()
+	if err != nil {
+		return RunnerMeta{}, err
+	}
+
+	if err := saveRunnerMeta(path, meta); err != nil {
+		return RunnerMeta{}, fmt.Errorf("saving runner meta: %w", err)
+	}
+
+	return meta, nil
+}
+
+func loadRunnerMeta(path string) (RunnerMeta, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return RunnerMeta{}, err
+	}
+
+	var meta RunnerMeta
+	if err := json.Unmarshal(data, &meta); err != nil {
+		return RunnerMeta{}, fmt.Errorf("invalid meta.json: %w", err)
+	}
+
+	return meta, nil
+}
+
+func saveRunnerMeta(path string, meta RunnerMeta) error {
+	if err := os.MkdirAll(META_DIR_PATH, 0o755); err != nil {
+		return err
+	}
+
+	data, err := json.MarshalIndent(meta, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	tmp := path + ".tmp"
+
+	if err := os.WriteFile(tmp, data, 0o600); err != nil {
+		return err
+	}
+
+	return os.Rename(tmp, path)
+}
+
+func promptForRegistration() (RunnerMeta, error) {
+	fmt.Print("Enter registration token: ")
+
+	reader := bufio.NewReader(os.Stdin)
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		return RunnerMeta{}, fmt.Errorf("failed to read input: %w", err)
+	}
+
+	token := strings.TrimSpace(input)
+	if token == "" {
+		return RunnerMeta{}, errors.New("registration token cannot be empty")
+	}
+
+	return RunnerMeta{Token: token}, nil
+}
+
+func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	filePath := filepath.Join(META_DIR_PATH, "meta.json")
 
-	var state RunnerMeta
-	file, err := os.ReadFile(filePath)
+	state, err := SetupRunnerConfig()
 	if err != nil {
-		fmt.Println("Meta File missing, registering runner with REGISTRATION_TOKEN")
-
-		reader := bufio.NewReader(os.Stdin)
-
-		fmt.Println("Please enter the registration token")
-
-		text, err := reader.ReadString('\n')
-		if err != nil {
-			panic("Registering runner: Failed to read response body")
-		}
-
-		text = strings.ReplaceAll(text, "\n", "")
-
-		fmt.Println(text)
-
-		state.Token = text
-		stateStr, err := json.Marshal(state)
-		if err != nil {
-			panic(err)
-		}
-
-		err = os.Mkdir(META_DIR_PATH, 0755)
-		if err != nil {
-			panic(err)
-		}
-
-		f, err := os.Create(filePath)
-		if err != nil {
-			panic(err)
-		}
-
-		defer func() {
-			err := f.Close()
-			if err != nil {
-				panic(err)
-			}
-		}()
-
-		_, err = f.Write(stateStr)
-		if err != nil {
-			panic(err)
-		}
-	} else {
-
-		err = json.Unmarshal(file, &state)
-		if err != nil {
-			panic(err)
-		}
+		panic(err)
 	}
 
-	fmt.Println(state.Token)
-
-	// Check var/lib/{name}/runner to see if RUNNER_TOKEN exists
+	fmt.Print(state.Token)
 	//
 	// if no RUNNER_TOKEN
 	// Check Env REGISTRATION_TOKEN variable
