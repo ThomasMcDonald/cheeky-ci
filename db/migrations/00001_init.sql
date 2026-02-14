@@ -19,6 +19,7 @@ CREATE TABLE runners (
   token_hash TEXT NOT NULL,
   capabilities JSONB DEFAULT '{}'::jsonb,
   capacity INT DEFAULT 0,
+  last_seen_at TIMESTAMP DEFAULT NOW(),
   created_at TIMESTAMP DEFAULT NOW()
 );
 

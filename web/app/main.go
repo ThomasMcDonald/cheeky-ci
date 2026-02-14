@@ -176,17 +176,47 @@ func main() {
 	})
 
 	http.HandleFunc("/runner/{id}/heartbeat", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
+		if r.Method != http.MethodPut {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
+		runnerId := r.PathValue("id")
 
-		_, err := fmt.Fprintln(w, "{}")
+		tx, err := dbpool.BeginTx(context.Background(), pgx.TxOptions{})
 		if err != nil {
+			fmt.Print(err)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
+
+		defer func() {
+			if err != nil {
+				err = tx.Rollback(context.Background())
+				if err != nil {
+					panic(err)
+				}
+
+			} else {
+				err = tx.Commit(context.Background())
+				if err != nil {
+					panic(err)
+				}
+			}
+		}()
+
+		_, err = tx.Exec(context.Background(), "UPDATE runners SET last_seen_at = NOW() WHERE id = $1", runnerId)
+		if err != nil {
+			fmt.Println(err)
+			err = tx.Rollback(context.Background())
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
 	})
 
 	fmt.Println("Server running at 5173")
