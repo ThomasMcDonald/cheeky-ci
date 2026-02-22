@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/thomasmcdonald/cheeky-ci/internal/job"
+	"github.com/thomasmcdonald/cheeky-ci/internal/jobparser"
 )
 
 type (
@@ -43,6 +44,7 @@ type (
 
 	AgentRunner struct {
 		executor Executor
+		job      job.Spec
 		logger   *log.Logger
 		stopCh   chan struct{}
 	}
@@ -52,7 +54,7 @@ type (
 func (r *AgentRunner) Run(ctx context.Context) error {
 	r.logger.Printf("Starting runner using executor%s", r.executor.Name())
 
-	job := dummyJob()
+	job := r.job
 
 	r.logger.Printf("Received job %s", job.JobID)
 
@@ -90,50 +92,20 @@ func (r *AgentRunner) Run(ctx context.Context) error {
 	return nil
 }
 
+// Shutdown Shutdown the agent runner by closing the channel
 func (r *AgentRunner) Shutdown(ctx context.Context) error {
 	r.logger.Println("runner shutting down")
 	close(r.stopCh)
 	return nil
 }
 
-func NewAgentRunner(executor Executor) *AgentRunner {
+// NewAgentRunner Create an Agent Runner instance
+func NewAgentRunner(executor Executor, job job.Spec) *AgentRunner {
 	return &AgentRunner{
 		executor: executor,
+		job:      job,
 		logger:   log.New(os.Stdout, "[runner] ", log.LstdFlags),
 		stopCh:   make(chan struct{}),
-	}
-}
-
-func dummyJob() job.Spec {
-	return job.Spec{
-		JobID:     "job-dummy-001",
-		Workspace: "/tmp/ci-workspace-job-dummy-001",
-		Env: map[string]string{
-			"CI":         "true",
-			"JOB_ID":     "job-dummy-001",
-			"RUNNER_ENV": "test",
-		},
-		Timeout: 60 * time.Second,
-		Steps: []job.StepSpec{
-			{
-				Name:    "checkout",
-				Image:   "alpine:3.19",
-				Command: []string{"sh", "-c", "echo hello > hello.txt"},
-				Workdir: "/workspace",
-			},
-			{
-				Name:    "build",
-				Image:   "alpine:3.19",
-				Command: []string{"cat", "hello.txt"},
-				Workdir: "/workspace",
-			},
-			{
-				Name:    "test",
-				Image:   "alpine:3.19",
-				Command: []string{"sh", "-c", "echo failing && exit 1"},
-				Workdir: "/workspace",
-			},
-		},
 	}
 }
 
@@ -141,12 +113,32 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	filePath := flag.String("file", "", "YAML Job Specification file path")
+
+	flag.Parse()
+
+	if *filePath == "" {
+		panic("YAML Job specification file path missing. usage: -file=")
+	}
+
+	data, err := os.ReadFile(*filePath)
+
+	if err != nil {
+		panic(fmt.Errorf("Failed to read YAML job Specification:L %v", err))
+	}
+
+	job, err := jobparser.Parser[job.Spec](data)
+
+	if err != nil {
+		panic(fmt.Errorf("Failed to parse YAML job specification: %v", err))
+	}
+
 	executor, err := NewDockerExecutor()
 	if err != nil {
 		log.Fatalf("failed to create executor: %v", err)
 	}
 
-	runner := NewAgentRunner(executor)
+	runner := NewAgentRunner(executor, job)
 
 	if err := runner.Run(ctx); err != nil {
 		log.Fatalf("runner failed: %v", err)

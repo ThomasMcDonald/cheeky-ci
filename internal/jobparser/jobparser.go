@@ -4,11 +4,11 @@ import (
 	"github.com/goccy/go-yaml"
 )
 
-// Parser Parse the yaml
-func Parser[T any](yml string) (T, error) {
+// Parser Parse the yaml. No reason for this to by Generic, thought I'd try something new.
+func Parser[T any](yml []byte) (T, error) {
 	var v T
 
-	if err := yaml.Unmarshal([]byte(yml), &v); err != nil {
+	if err := yaml.Unmarshal(yml, &v); err != nil {
 		return v, err
 	}
 

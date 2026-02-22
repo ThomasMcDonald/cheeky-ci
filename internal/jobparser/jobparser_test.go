@@ -2,46 +2,14 @@ package jobparser
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/thomasmcdonald/cheeky-ci/internal/job"
 )
 
 func TestParser(t *testing.T) {
-	yml := `
-job_id: job-dummy-001
-workspace: /tmp/ci-workspace-job-dummy-001
-timeout: 60s
-
-env:
-  CI: "true"
-  JOB_ID: "job-dummy-001"
-  RUNNER_ENV: "test"
-
-steps:
-  - name: checkout
-    image: alpine:3.19
-    workdir: /workspace
-    command:
-      - sh
-      - -c
-      - echo hello > hello.txt
-
-  - name: build
-    image: alpine:3.19
-    workdir: /workspace
-    command:
-      - cat
-      - hello.txt
-
-  - name: test
-    image: alpine:3.19
-    workdir: /workspace
-    command:
-      - sh
-      - -c
-      - echo failing && exit 1
-`
+	yml, err := os.ReadFile("testdata/dummy.yaml")
 
 	v, err := Parser[job.Spec](yml)
 
