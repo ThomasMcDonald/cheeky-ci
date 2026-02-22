@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"sync"
 	"testing"
+
+	"github.com/thomasmcdonald/cheeky-ci/internal/job"
 )
 
 type FakeExecutor struct {
@@ -33,7 +35,7 @@ func (f *FakeExecutor) Capabilities() ExecutorCapabilities {
 	}
 }
 
-func (f *FakeExecutor) CreateSandbox(ctx context.Context, spec JobSpec) (Sandbox, error) {
+func (f *FakeExecutor) CreateSandbox(ctx context.Context, spec job.Spec) (Sandbox, error) {
 	return &FakeSandbox{
 		Executor: f,
 		JobID:    spec.JobID,
@@ -46,7 +48,7 @@ type FakeSandbox struct {
 	destroyed bool
 }
 
-func (s *FakeSandbox) RunStep(ctx context.Context, step StepSpec) StepResult {
+func (s *FakeSandbox) RunStep(ctx context.Context, step job.StepSpec) StepResult {
 	s.Executor.mu.Lock()
 	defer s.Executor.mu.Unlock()
 
@@ -72,9 +74,9 @@ func TestRunnerStopsOnFailure(t *testing.T) {
 
 	executor.StepResults["build"] = StepResult{ExitCode: 1}
 
-	job := JobSpec{
+	job := job.Spec{
 		JobID: "job-1",
-		Steps: []StepSpec{
+		Steps: []job.StepSpec{
 			{Name: "checkout"},
 			{Name: "build"},
 			{Name: "test"},

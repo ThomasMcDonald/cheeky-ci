@@ -10,6 +10,7 @@ import (
 	"github.com/moby/moby/api/pkg/stdcopy"
 	"github.com/moby/moby/api/types/container"
 	"github.com/moby/moby/client"
+	"github.com/thomasmcdonald/cheeky-ci/internal/job"
 )
 
 type DockerExecutor struct {
@@ -50,7 +51,7 @@ func envMapToSlice(env map[string]string) []string {
 	return out
 }
 
-func (d *DockerExecutor) CreateSandbox(ctx context.Context, spec JobSpec) (Sandbox, error) {
+func (d *DockerExecutor) CreateSandbox(ctx context.Context, spec job.Spec) (Sandbox, error) {
 	image := spec.Steps[0].Image
 
 	reader, err := d.client.ImagePull(
@@ -110,7 +111,7 @@ type DockerSandbox struct {
 	containerID string
 }
 
-func (s *DockerSandbox) RunStep(ctx context.Context, step StepSpec) StepResult {
+func (s *DockerSandbox) RunStep(ctx context.Context, step job.StepSpec) StepResult {
 	execResp, err := s.client.ExecCreate(ctx, s.containerID, client.ExecCreateOptions{
 		Cmd:          step.Command,
 		Env:          envMapToSlice(step.Env),

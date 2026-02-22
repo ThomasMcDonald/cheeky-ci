@@ -7,11 +7,6 @@ import (
 	"github.com/thomasmcdonald/cheeky-ci/internal/job"
 )
 
-type v struct {
-	A int
-	B string
-}
-
 func TestParser(t *testing.T) {
 	yml := `
 job_id: job-dummy-001
@@ -48,7 +43,7 @@ steps:
       - echo failing && exit 1
 `
 
-	v, err := Parser[job.JobSpec](yml)
+	v, err := Parser[job.Spec](yml)
 
 	if err != nil {
 		t.Error(err)

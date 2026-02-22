@@ -23,7 +23,7 @@ type (
 		MaxMemoryMB  int
 	}
 	Executor interface {
-		CreateSandbox(ctx context.Context, spec job.JobSpec) (Sandbox, error)
+		CreateSandbox(ctx context.Context, spec job.Spec) (Sandbox, error)
 		Name() string
 		Capabilities() ExecutorCapabilities
 	}
@@ -104,8 +104,8 @@ func NewAgentRunner(executor Executor) *AgentRunner {
 	}
 }
 
-func dummyJob() job.JobSpec {
-	return job.JobSpec{
+func dummyJob() job.Spec {
+	return job.Spec{
 		JobID:     "job-dummy-001",
 		Workspace: "/tmp/ci-workspace-job-dummy-001",
 		Env: map[string]string{
