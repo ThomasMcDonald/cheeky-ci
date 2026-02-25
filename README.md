@@ -1,3 +1,3 @@
 Implementation of CI infra.
 
-WIP. Baby steps.
+File paths are relative. 
