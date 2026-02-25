@@ -14,6 +14,7 @@ type Spec struct {
 // StepSpec outlines a step to run within a Runner
 type StepSpec struct {
 	Name    string            `yaml:"name"`
+	Path    string            `yaml:"path"`
 	Image   string            `yaml:"image"`
 	Command []string          `yaml:"command"`
 	Env     map[string]string `yaml:"env"`

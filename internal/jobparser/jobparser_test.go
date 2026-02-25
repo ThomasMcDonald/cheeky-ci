@@ -4,27 +4,46 @@ import (
 	"fmt"
 	"os"
 	"testing"
-
-	"github.com/thomasmcdonald/cheeky-ci/internal/job"
 )
 
+type testCase struct {
+	path string
+}
+
 func TestParser(t *testing.T) {
-	yml, err := os.ReadFile("testdata/dummy.yaml")
-
-	v, err := Parser[job.Spec](yml)
-
-	if err != nil {
-		t.Error(err)
-		return
+	testCases := map[string]testCase{
+		"Regular File": {
+			path: "testdata/base.yaml",
+		},
+		"External Step File": {
+			path: "testdata/externalSteps.yaml",
+		},
 	}
 
-	fmt.Println(v.JobID)
-	if len(v.Steps) != 3 {
+	for name, test := range testCases {
 
-		// output error with YAML source
+		t.Run(name, func(t *testing.T) {
+			yml, err := os.ReadFile(test.path)
 
-		fmt.Printf("it aint work")
+			v, err := Parser(yml)
 
-		t.Fail()
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			fmt.Println(v.JobID)
+			if len(v.Steps) != 3 {
+
+				// output error with YAML source
+
+				fmt.Printf("it aint work")
+
+				t.Fail()
+			}
+
+		})
+
 	}
+
 }

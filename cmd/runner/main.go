@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/thomasmcdonald/cheeky-ci/internal/executor"
-	"github.com/thomasmcdonald/cheeky-ci/internal/job"
 	"github.com/thomasmcdonald/cheeky-ci/internal/jobparser"
 	"github.com/thomasmcdonald/cheeky-ci/internal/runner"
 )
@@ -31,7 +30,7 @@ func main() {
 		panic(fmt.Errorf("Failed to read YAML job Specification:L %v", err))
 	}
 
-	job, err := jobparser.Parser[job.Spec](data)
+	job, err := jobparser.Parser(data)
 
 	if err != nil {
 		panic(fmt.Errorf("Failed to parse YAML job specification: %v", err))
