@@ -7,10 +7,10 @@ import (
 	"io"
 	"runtime"
 
-	"github.com/ThomasMcDonald/cheeky-ci/internal/job"
 	"github.com/moby/moby/api/pkg/stdcopy"
 	"github.com/moby/moby/api/types/container"
 	"github.com/moby/moby/client"
+	"github.com/thomasmcdonald/cheeky-ci/internal/job"
 )
 
 type DockerExecutor struct {

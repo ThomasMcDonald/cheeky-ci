@@ -3,7 +3,7 @@ package executor
 import (
 	"context"
 
-	"github.com/ThomasMcDonald/cheeky-ci/internal/job"
+	"github.com/thomasmcdonald/cheeky-ci/internal/job"
 )
 
 type (

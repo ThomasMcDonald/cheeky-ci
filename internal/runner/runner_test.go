@@ -6,8 +6,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/ThomasMcDonald/cheeky-ci/internal/executor"
-	"github.com/ThomasMcDonald/cheeky-ci/internal/job"
+	"github.com/thomasmcdonald/cheeky-ci/internal/executor"
+	"github.com/thomasmcdonald/cheeky-ci/internal/job"
 )
 
 type FakeExecutor struct {

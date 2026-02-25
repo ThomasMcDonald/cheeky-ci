@@ -4,8 +4,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ThomasMcDonald/cheeky-ci/internal/job"
 	"github.com/goccy/go-yaml"
+	"github.com/thomasmcdonald/cheeky-ci/internal/job"
 )
 
 // Parser Parse the yaml.

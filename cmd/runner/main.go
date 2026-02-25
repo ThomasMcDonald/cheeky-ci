@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ThomasMcDonald/cheeky-ci/internal/executor"
-	"github.com/ThomasMcDonald/cheeky-ci/internal/jobparser"
-	"github.com/ThomasMcDonald/cheeky-ci/internal/runner"
+	"github.com/thomasmcdonald/cheeky-ci/internal/executor"
+	"github.com/thomasmcdonald/cheeky-ci/internal/jobparser"
+	"github.com/thomasmcdonald/cheeky-ci/internal/runner"
 )
 
 func main() {

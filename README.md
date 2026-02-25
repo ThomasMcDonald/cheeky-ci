@@ -2,7 +2,7 @@ Implementation of CI infra.
 
 ### Installation
 ```
-go install github.com/ThomasMcDonald/cheeky-ci/cmd/runner@latest
+go install github.com/thomasmcdonald/cheeky-ci/cmd/runner@latest
 ```
 
 
