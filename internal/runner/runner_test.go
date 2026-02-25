@@ -6,6 +6,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/thomasmcdonald/cheeky-ci/internal/executor"
 	"github.com/thomasmcdonald/cheeky-ci/internal/job"
 )
 
@@ -26,8 +27,8 @@ func (f *FakeExecutor) Name() string {
 	return "Fake"
 }
 
-func (f *FakeExecutor) Capabilities() ExecutorCapabilities {
-	return ExecutorCapabilities{
+func (f *FakeExecutor) Capabilities() executor.ExecutorCapabilities {
+	return executor.ExecutorCapabilities{
 		Architecture: "Test",
 		Isolation:    "Test",
 		MaxCPU:       1,
@@ -35,7 +36,7 @@ func (f *FakeExecutor) Capabilities() ExecutorCapabilities {
 	}
 }
 
-func (f *FakeExecutor) CreateSandbox(ctx context.Context, spec job.Spec) (Sandbox, error) {
+func (f *FakeExecutor) CreateSandbox(ctx context.Context, spec job.Spec) (executor.Sandbox, error) {
 	return &FakeSandbox{
 		Executor: f,
 		JobID:    spec.JobID,

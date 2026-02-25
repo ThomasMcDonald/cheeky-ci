@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/thomasmcdonald/cheeky-ci/internal/executor"
 	"github.com/thomasmcdonald/cheeky-ci/internal/job"
 	"github.com/thomasmcdonald/cheeky-ci/internal/jobparser"
 	"github.com/thomasmcdonald/cheeky-ci/internal/runner"
@@ -36,7 +37,7 @@ func main() {
 		panic(fmt.Errorf("Failed to parse YAML job specification: %v", err))
 	}
 
-	executor, err := runner.NewDockerExecutor()
+	executor, err := executor.NewDockerExecutor()
 	if err != nil {
 		log.Fatalf("failed to create executor: %v", err)
 	}

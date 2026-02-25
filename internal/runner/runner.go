@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/thomasmcdonald/cheeky-ci/internal/executor"
 	"github.com/thomasmcdonald/cheeky-ci/internal/job"
 )
 
@@ -15,26 +16,8 @@ type (
 		Shutdown(ctx context.Context) error
 	}
 
-	ExecutorCapabilities struct {
-		Architecture string
-		Isolation    string
-		MaxCPU       int
-		MaxMemoryMB  int
-	}
-	Executor interface {
-		CreateSandbox(ctx context.Context, spec job.Spec) (Sandbox, error)
-		Name() string
-		Capabilities() ExecutorCapabilities
-	}
-
-	Sandbox interface {
-		RunStep(ctx context.Context, step job.StepSpec) job.StepResult
-
-		Destroy(ctx context.Context) error
-	}
-
 	AgentRunner struct {
-		executor Executor
+		executor executor.Executor
 		job      job.Spec
 		logger   *log.Logger
 		stopCh   chan struct{}
@@ -91,7 +74,7 @@ func (r *AgentRunner) Shutdown(ctx context.Context) error {
 }
 
 // NewAgentRunner Create an Agent Runner instance
-func NewAgentRunner(executor Executor, job job.Spec) *AgentRunner {
+func NewAgentRunner(executor executor.Executor, job job.Spec) *AgentRunner {
 	return &AgentRunner{
 		executor: executor,
 		job:      job,
