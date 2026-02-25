@@ -1,7 +1,16 @@
 Implementation of CI infra.
 
+### Installation
+```
+go install github.com/ThomasMcDonald/cheeky-ci/cmd/runner@latest
+```
 
-`runner -file= ./internal/jobparser/testdata/externalSteps.yaml`
+
+### Usage
+
+```
+runner -file= ./internal/jobparser/testdata/externalSteps.yaml
+```
 
 Sub step file paths are relative to the parent file. in the below example steps is in `./internal/jobparser/testdata/`
 
