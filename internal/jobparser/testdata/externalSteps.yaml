@@ -17,16 +17,4 @@ steps:
       - echo hello > hello.txt
 
   - name: build
-    image: alpine:3.19
-    workdir: /workspace
-    command:
-      - cat
-      - hello.txt
-
-  - name: test
-    image: alpine:3.19
-    workdir: /workspace
-    command:
-      - sh
-      - -c
-      - echo failing && exit 1
+    path: ../../internal/jobparser/testdata/steps.yaml

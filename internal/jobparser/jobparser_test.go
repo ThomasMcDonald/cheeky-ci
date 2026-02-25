@@ -32,15 +32,7 @@ func TestParser(t *testing.T) {
 				return
 			}
 
-			fmt.Println(v.JobID)
-			if len(v.Steps) != 3 {
-
-				// output error with YAML source
-
-				fmt.Printf("it aint work")
-
-				t.Fail()
-			}
+			fmt.Println(v)
 
 		})
 

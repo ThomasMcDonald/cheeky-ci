@@ -11,6 +11,11 @@ type Spec struct {
 	Timeout   time.Duration     `yaml:"timeout"`
 }
 
+// SubJobSpec contains only steps within the file
+type SubJobSpec struct {
+	Steps []StepSpec `yaml:"steps"`
+}
+
 // StepSpec outlines a step to run within a Runner
 type StepSpec struct {
 	Name    string            `yaml:"name"`
