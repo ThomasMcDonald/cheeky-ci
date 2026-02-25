@@ -1,4 +1,4 @@
-module github.com/thomasmcdonald/cheeky-ci
+module github.com/ThomasMcDonald/cheeky-ci
 
 go 1.24.2
 
