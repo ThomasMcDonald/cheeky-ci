@@ -19,3 +19,11 @@ type StepSpec struct {
 	Env     map[string]string `yaml:"env"`
 	Workdir string            `yaml:"workdor"`
 }
+
+// StepResult the result of the step
+type StepResult struct {
+	ExitCode int
+	Stdout   string
+	Stderr   string
+	Error    error
+}

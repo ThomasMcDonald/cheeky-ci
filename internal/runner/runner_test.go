@@ -1,4 +1,4 @@
-package main
+package runner
 
 import (
 	"context"
@@ -12,13 +12,13 @@ import (
 type FakeExecutor struct {
 	mu sync.Mutex
 
-	StepResults   map[string]StepResult
+	StepResults   map[string]job.StepResult
 	ExecutedSteps []string
 }
 
 func NewFakeExecutor() *FakeExecutor {
 	return &FakeExecutor{
-		StepResults: make(map[string]StepResult),
+		StepResults: make(map[string]job.StepResult),
 	}
 }
 
@@ -48,7 +48,7 @@ type FakeSandbox struct {
 	destroyed bool
 }
 
-func (s *FakeSandbox) RunStep(ctx context.Context, step job.StepSpec) StepResult {
+func (s *FakeSandbox) RunStep(ctx context.Context, step job.StepSpec) job.StepResult {
 	s.Executor.mu.Lock()
 	defer s.Executor.mu.Unlock()
 
@@ -58,7 +58,7 @@ func (s *FakeSandbox) RunStep(ctx context.Context, step job.StepSpec) StepResult
 		return result
 	}
 
-	return StepResult{
+	return job.StepResult{
 		ExitCode: 0,
 	}
 }
@@ -72,7 +72,7 @@ func (s *FakeSandbox) Destroy(ctx context.Context) error {
 func TestRunnerStopsOnFailure(t *testing.T) {
 	executor := NewFakeExecutor()
 
-	executor.StepResults["build"] = StepResult{ExitCode: 1}
+	executor.StepResults["build"] = job.StepResult{ExitCode: 1}
 
 	job := job.Spec{
 		JobID: "job-1",

@@ -1,4 +1,4 @@
-package main
+package runner
 
 import (
 	"bytes"
@@ -111,7 +111,7 @@ type DockerSandbox struct {
 	containerID string
 }
 
-func (s *DockerSandbox) RunStep(ctx context.Context, step job.StepSpec) StepResult {
+func (s *DockerSandbox) RunStep(ctx context.Context, step job.StepSpec) job.StepResult {
 	execResp, err := s.client.ExecCreate(ctx, s.containerID, client.ExecCreateOptions{
 		Cmd:          step.Command,
 		Env:          envMapToSlice(step.Env),
@@ -120,12 +120,12 @@ func (s *DockerSandbox) RunStep(ctx context.Context, step job.StepSpec) StepResu
 		AttachStdout: true,
 	})
 	if err != nil {
-		return StepResult{ExitCode: -1, Error: err}
+		return job.StepResult{ExitCode: -1, Error: err}
 	}
 
 	attach, err := s.client.ExecAttach(ctx, execResp.ID, client.ExecAttachOptions{})
 	if err != nil {
-		return StepResult{ExitCode: -1, Error: err}
+		return job.StepResult{ExitCode: -1, Error: err}
 	}
 
 	defer attach.Close()
@@ -134,7 +134,7 @@ func (s *DockerSandbox) RunStep(ctx context.Context, step job.StepSpec) StepResu
 
 	_, err = stdcopy.StdCopy(&stdout, &stderr, attach.Reader)
 	if err != nil {
-		return StepResult{ExitCode: -1, Error: err}
+		return job.StepResult{ExitCode: -1, Error: err}
 	}
 
 	inspect, err := s.client.ExecInspect(
@@ -143,14 +143,14 @@ func (s *DockerSandbox) RunStep(ctx context.Context, step job.StepSpec) StepResu
 		client.ExecInspectOptions{},
 	)
 	if err != nil {
-		return StepResult{
+		return job.StepResult{
 			ExitCode: -1, Error: err,
 			Stdout: stdout.String(),
 			Stderr: stderr.String(),
 		}
 	}
 
-	return StepResult{
+	return job.StepResult{
 		ExitCode: inspect.ExitCode,
 		Stdout:   stdout.String(),
 		Stderr:   stderr.String(),
