@@ -1,8 +1,6 @@
 package jobparser
 
 import (
-	"fmt"
-	"os"
 	"testing"
 )
 
@@ -23,16 +21,13 @@ func TestParser(t *testing.T) {
 	for name, test := range testCases {
 
 		t.Run(name, func(t *testing.T) {
-			yml, err := os.ReadFile(test.path)
 
-			v, err := Parser(yml)
+			_, err := Parser(test.path)
 
 			if err != nil {
 				t.Error(err)
 				return
 			}
-
-			fmt.Println(v)
 
 		})
 

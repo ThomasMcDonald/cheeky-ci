@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/thomasmcdonald/cheeky-ci/internal/executor"
 	"github.com/thomasmcdonald/cheeky-ci/internal/jobparser"
@@ -24,13 +23,7 @@ func main() {
 		panic("YAML Job specification file path missing. usage: -file=")
 	}
 
-	data, err := os.ReadFile(*filePath)
-
-	if err != nil {
-		panic(fmt.Errorf("Failed to read YAML job Specification:L %v", err))
-	}
-
-	job, err := jobparser.Parser(data)
+	job, err := jobparser.Parser(*filePath)
 
 	if err != nil {
 		panic(fmt.Errorf("Failed to parse YAML job specification: %v", err))

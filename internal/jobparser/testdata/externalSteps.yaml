@@ -17,4 +17,4 @@ steps:
       - echo hello > hello.txt
 
   - name: build
-    path: ../../internal/jobparser/testdata/steps.yaml
+    path: ./steps.yaml

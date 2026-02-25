@@ -2,14 +2,22 @@ package jobparser
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/goccy/go-yaml"
 	"github.com/thomasmcdonald/cheeky-ci/internal/job"
 )
 
 // Parser Parse the yaml.
-func Parser(yml []byte) (job.Spec, error) {
+func Parser(path string) (job.Spec, error) {
 	var v job.Spec
+	var dir = filepath.Dir(path)
+
+	yml, err := os.ReadFile(path)
+
+	if err != nil {
+		return v, err
+	}
 
 	if err := yaml.Unmarshal(yml, &v); err != nil {
 		return v, err
@@ -23,7 +31,7 @@ func Parser(yml []byte) (job.Spec, error) {
 			continue
 		}
 
-		steps, err := os.ReadFile(step.Path)
+		steps, err := os.ReadFile(filepath.Join(dir, step.Path))
 
 		if err != nil {
 			return v, err
